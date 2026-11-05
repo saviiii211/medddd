@@ -1,3 +1,10 @@
+import serverless from 'serverless-http';
+export const handler = serverless(app);
+if (process.env.NODE_ENV !== 'production' && !process.env.NETLIFY) {
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${port}`);
+  });
+}
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -478,9 +485,19 @@ async function startServer() {
     });
   }
 
-  app.listen(port, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${port}`);
-  });
+
+  if (process.env.NODE_ENV !== 'production' && !process.env.NETLIFY) {
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`Server running on http://0.0.0.0:${port}`);
+    });
+  }
 }
 
 startServer();
+
+
+
+
+
+
+export const handler = serverless(app);
