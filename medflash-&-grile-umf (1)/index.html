@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ro" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MedFlash & Grile UMF — Studiu Inteligent din PDF</title>
+    <meta name="description" content="Platformă inteligentă de studiu și generare rapidă de flashcarduri și teste grilă UMFCD din materiale PDF cu Gemini 3.8 Flash." />
+    <meta property="og:title" content="MedFlash & Grile UMF — Studiu Inteligent din PDF" />
+    <meta property="og:description" content="Platformă inteligentă de studiu și generare rapidă de flashcarduri și teste grilă UMFCD din materiale PDF cu Gemini 3.8 Flash." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- PDF.js pentru extragerea fidelă a textului din PDF-uri -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 min-h-full flex flex-col selection:bg-teal-500 selection:text-white">
+    <div id="root" class="min-h-full flex flex-col flex-1"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

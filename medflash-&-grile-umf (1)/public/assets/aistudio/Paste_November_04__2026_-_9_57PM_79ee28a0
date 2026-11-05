@@ -1,0 +1,3117 @@
+
+Conversația cu Gemini
+<!DOCTYPE html>
+
+<html lang="ro" class="h-full">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>MedFlash & Grile UMF — Studiu Inteligent din PDF</title>
+
+    <!-- Tailwind CSS -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- PDF.js pentru extragerea fidelă a textului din PDF-uri -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+
+
+    <script>
+
+        tailwind.config = {
+
+            darkMode: 'class',
+
+            theme: {
+
+                extend: {
+
+                    fontFamily: {
+
+                        sans: ['Inter', 'sans-serif'],
+
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+
+                    },
+
+                    colors: {
+
+                        med: {
+
+                            50: '#f0fdfa',
+
+                            100: '#ccfbf1',
+
+                            200: '#99f6e4',
+
+                            300: '#5eead4',
+
+                            400: '#2dd4bf',
+
+                            500: '#14b8a6',
+
+                            600: '#0d9488',
+
+                            700: '#0f766e',
+
+                            800: '#115e59',
+
+                            900: '#134e4a',
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+
+
+    <style>
+
+        body {
+
+            font-family: 'Inter', sans-serif;
+
+            -webkit-tap-highlight-color: transparent;
+
+            overscroll-behavior-y: contain;
+
+        }
+
+        .perspective-1000 { perspective: 1200px; }
+
+        .transform-style-3d { transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        .swipe-card { touch-action: pan-y; user-select: none; -webkit-user-select: none; transition: transform 0.25s ease, opacity 0.25s ease; }
+
+        .swipe-card.dragging { transition: none; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+
+        ::-webkit-scrollbar-track { background: transparent; }
+
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 9999px; }
+
+    </style>
+
+</head>
+
+<body class="bg-slate-50 text-slate-900 min-h-full flex flex-col selection:bg-med-500 selection:text-white">
+
+
+
+    <!-- TOAST NOTIFICATIONS -->
+
+    <div id="toastContainer" class="fixed top-4 right-4 left-4 sm:left-auto sm:w-96 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+
+
+    <!-- ECRAN AUTENTIFICARE -->
+
+    <div id="authScreen" class="fixed inset-0 z-50 bg-gradient-to-br from-slate-900 via-med-900 to-slate-900 flex items-center justify-center p-4 overflow-y-auto">
+
+        <div class="bg-white/95 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 my-auto">
+
+            <div class="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-med-600 to-teal-400 text-white mx-auto mb-5 shadow-lg shadow-med-500/30">
+
+                <i class="fa-solid fa-stethoscope text-2xl"></i>
+
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-center text-slate-900 font-display tracking-tight">
+
+                MedFlash & Grile UMF
+
+            </h1>
+
+            <p class="text-center text-slate-500 text-sm mt-2 mb-6">
+
+                Introdu numele tău pentru a accesa folderele, flashcardurile și testele tale salvate.
+
+            </p>
+
+
+
+            <form id="loginForm" class="space-y-4">
+
+                <div>
+
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Numele tău de utilizator</label>
+
+                    <div class="relative">
+
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
+
+                            <i class="fa-solid fa-user-doctor"></i>
+
+                        </span>
+
+                        <input
+
+                            type="text"
+
+                            id="usernameInput"
+
+                            required
+
+                            placeholder="ex: maria_umfcd"
+
+                            class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-med-500 focus:ring-4 focus:ring-med-500/15 outline-none font-medium text-slate-800"
+
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <div>
+
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">PIN / Cod secret (opțional)</label>
+
+                    <div class="relative">
+
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                        </span>
+
+                        <input
+
+                            type="password"
+
+                            id="pinInput"
+
+                            placeholder="ex: 1234 (sau lasă gol)"
+
+                            class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-med-500 focus:ring-4 focus:ring-med-500/15 outline-none font-medium text-slate-800"
+
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <button
+
+                    type="submit"
+
+                    id="loginBtn"
+
+                    class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-med-600 to-teal-500 hover:from-med-700 hover:to-teal-600 text-white font-bold text-base shadow-lg shadow-med-600/25 active:scale-[0.99] transition flex items-center justify-center gap-2"
+
+                >
+
+                    <span>Intră în contul meu</span>
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
+                </button>
+
+            </form>
+
+
+
+            <div class="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+
+                <button type="button" onclick="openSettingsModal()" class="text-med-700 hover:underline font-semibold flex items-center gap-1.5">
+
+                    <i class="fa-solid fa-gear"></i> Setări API Netlify
+
+                </button>
+
+                <button type="button" onclick="triggerImportBackup()" class="text-slate-600 hover:underline font-semibold flex items-center gap-1.5">
+
+                    <i class="fa-solid fa-file-import"></i> Importă Backup
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- HEADER -->
+
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+
+        <div class="max-w-5xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+
+            <div class="flex items-center gap-2 min-w-0">
+
+                <button
+
+                    id="backToFoldersBtn"
+
+                    onclick="navigateToDashboard()"
+
+                    class="hidden items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition shrink-0"
+
+                >
+
+                    <i class="fa-solid fa-chevron-left"></i>
+
+                </button>
+
+                <div onclick="navigateToDashboard()" class="flex items-center gap-2.5 cursor-pointer truncate">
+
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-med-600 to-teal-400 text-white flex items-center justify-center shadow-sm shrink-0">
+
+                        <i class="fa-solid fa-dna text-sm"></i>
+
+                    </div>
+
+                    <div class="truncate">
+
+                        <span class="font-extrabold text-base sm:text-lg text-slate-900 font-display tracking-tight block leading-none truncate" id="headerTitle">
+
+                            MedFlash UMF
+
+                        </span>
+
+                        <span id="syncStatusBadge" class="text-[11px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
+
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+
+                            <span id="syncStatusText">Sincronizat</span>
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+
+                <button onclick="exportBackupJSON()" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+
+                    <i class="fa-solid fa-download text-med-600"></i>
+
+                    <span class="hidden md:inline">Backup</span>
+
+                </button>
+
+                <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+
+                    <i class="fa-solid fa-sliders text-slate-600"></i>
+
+                    <span class="hidden lg:inline">Setări AI</span>
+
+                </button>
+
+                <button onclick="switchUserAccount()" class="py-2 px-3 rounded-xl bg-med-50 hover:bg-med-100 text-med-800 border border-med-200 text-xs font-bold flex items-center gap-1.5 transition max-w-[140px] truncate">
+
+                    <i class="fa-solid fa-circle-user text-med-600"></i>
+
+                    <span id="currentUserBadge" class="truncate">Utilizator</span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- MAIN -->
+
+    <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 py-5 pb-24">
+
+        <!-- VIEW 1: FOLDERE -->
+
+        <section id="dashboardView" class="space-y-6">
+
+            <div class="bg-gradient-to-r from-med-800 via-med-700 to-teal-700 rounded-3xl p-5 sm:p-7 text-white shadow-xl relative overflow-hidden">
+
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
+                    <div class="space-y-1.5 max-w-xl">
+
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-xs font-semibold">
+
+                            <i class="fa-solid fa-graduation-cap"></i>
+
+                            <span>Pregătire Admitere UMFCD</span>
+
+                        </div>
+
+                        <h2 class="text-xl sm:text-2xl font-extrabold font-display">Folderele tale de studiu</h2>
+
+                        <p class="text-med-100 text-xs sm:text-sm leading-relaxed">Organizează capitolele, încarcă PDF-ul și generează carduri sau teste grilă rapide.</p>
+
+                    </div>
+
+                    <button onclick="openFolderModal()" class="py-3.5 px-5 rounded-2xl bg-white text-med-900 hover:bg-med-50 font-extrabold text-sm shadow-lg active:scale-95 transition flex items-center justify-center gap-2 shrink-0">
+
+                        <i class="fa-solid fa-folder-plus text-med-600 text-base"></i>
+
+                        <span>Folder Nou</span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
+
+                <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-sm flex items-center gap-3">
+
+                    <div class="w-10 h-10 rounded-xl bg-med-50 text-med-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-folder-open"></i></div>
+
+                    <div class="min-w-0"><div id="statTotalFolders" class="text-lg sm:text-2xl font-extrabold leading-tight">0</div><div class="text-[11px] text-slate-500 truncate">Foldere</div></div>
+
+                </div>
+
+                <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-sm flex items-center gap-3">
+
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-layer-group"></i></div>
+
+                    <div class="min-w-0"><div id="statTotalCards" class="text-lg sm:text-2xl font-extrabold leading-tight">0</div><div class="text-[11px] text-slate-500 truncate">Carduri</div></div>
+
+                </div>
+
+                <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-sm flex items-center gap-3">
+
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-list-check"></i></div>
+
+                    <div class="min-w-0"><div id="statTotalTests" class="text-lg sm:text-2xl font-extrabold leading-tight">0</div><div class="text-[11px] text-slate-500 truncate">Teste</div></div>
+
+                </div>
+
+            </div>
+
+
+
+            <div id="foldersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+
+
+            <div id="emptyFoldersState" class="hidden bg-white rounded-3xl border-2 border-dashed border-slate-200 p-8 text-center">
+
+                <div class="w-16 h-16 rounded-2xl bg-med-50 text-med-600 flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fa-solid fa-folder-plus"></i></div>
+
+                <h3 class="text-lg font-bold text-slate-800">Nu ai creat niciun folder</h3>
+
+                <p class="text-sm text-slate-500 max-w-md mx-auto mt-1 mb-5">Creează primul tău folder (ex: „Capitolul 1 - Celula”) pentru a începe.</p>
+
+                <button onclick="openFolderModal()" class="py-3 px-5 rounded-2xl bg-med-600 hover:bg-med-700 text-white font-bold text-sm shadow-md transition inline-flex items-center gap-2">
+
+                    <i class="fa-solid fa-plus"></i> Creează folder
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- VIEW 2: INTERIOR FOLDER -->
+
+        <section id="folderDetailView" class="hidden space-y-5">
+
+            <div class="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+                    <div class="min-w-0">
+
+                        <div class="flex items-center gap-2">
+
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-med-100 text-med-800">Folder</span>
+
+                            <h2 id="activeFolderTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900 truncate">Folder</h2>
+
+                            <button onclick="openRenameFolderModal()" class="text-slate-400 hover:text-med-600 p-1.5"><i class="fa-solid fa-pen text-xs"></i></button>
+
+                        </div>
+
+                        <p id="activeFolderPdfStatus" class="text-xs sm:text-sm text-slate-500 mt-1 flex items-center gap-1.5"><i class="fa-regular fa-file-pdf text-rose-500"></i><span>Niciun PDF încărcat</span></p>
+
+                    </div>
+
+
+
+                    <div class="flex flex-wrap items-center gap-2">
+
+                        <label class="cursor-pointer py-2.5 px-4 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs sm:text-sm transition flex items-center gap-2">
+
+                            <i class="fa-solid fa-file-pdf text-rose-600"></i>
+
+                            <span id="uploadPdfBtnLabel">Încarcă PDF</span>
+
+                            <input type="file" id="pdfFileInput" accept="application/pdf" class="hidden" onchange="handlePdfUpload(event)">
+
+                        </label>
+
+                        <button onclick="openSourceTextModal()" class="py-2.5 px-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm transition flex items-center gap-1.5">
+
+                            <i class="fa-solid fa-file-lines text-slate-500"></i><span>Text Sursă</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                    <button onclick="openGenerateFlashcardsModal()" class="p-3.5 rounded-2xl bg-gradient-to-r from-med-600 to-teal-500 hover:from-med-700 text-white font-bold text-sm shadow-md transition flex items-center justify-between">
+
+                        <span class="flex items-center gap-2.5">
+
+                            <span class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+
+                            <span class="text-left"><span class="block leading-tight">Generează Flashcarduri</span><span class="block text-[11px] text-med-100 font-normal">Fidel textului PDF</span></span>
+
+                        </span>
+
+                        <i class="fa-solid fa-chevron-right text-xs opacity-80"></i>
+
+                    </button>
+
+
+
+                    <button onclick="openGenerateTestModal()" class="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 text-white font-bold text-sm shadow-md transition flex items-center justify-between">
+
+                        <span class="flex items-center gap-2.5">
+
+                            <span class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center"><i class="fa-solid fa-graduation-cap"></i></span>
+
+                            <span class="text-left"><span class="block leading-tight">Generează Test Grilă (60 Grile)</span><span class="block text-[11px] text-indigo-100 font-normal">30 Simplu + 30 Grupat (Asincron)</span></span>
+
+                        </span>
+
+                        <i class="fa-solid fa-chevron-right text-xs opacity-80"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- TABS FOLDER -->
+
+            <div class="flex bg-slate-200/70 p-1.5 rounded-2xl gap-1">
+
+                <button id="tabBtnSwipe" onclick="switchFolderTab('swipe')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 bg-white text-slate-900 shadow-sm">
+
+                    <i class="fa-solid fa-clone text-med-600"></i><span>Învață (Swipe)</span><span id="badgeCountSwipe" class="px-2 py-0.5 text-[11px] rounded-full bg-med-100 text-med-800">0</span>
+
+                </button>
+
+                <button id="tabBtnManage" onclick="switchFolderTab('manage')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900">
+
+                    <i class="fa-solid fa-pen-to-square text-amber-600"></i><span>Editează Carduri</span>
+
+                </button>
+
+                <button id="tabBtnTests" onclick="switchFolderTab('tests')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900">
+
+                    <i class="fa-solid fa-file-circle-check text-indigo-600"></i><span>Teste Grilă</span><span id="badgeCountTests" class="px-2 py-0.5 text-[11px] rounded-full bg-indigo-100 text-indigo-800">0</span>
+
+                </button>
+
+            </div>
+
+
+
+            <!-- SUB-TAB 1: SWIPE -->
+
+            <div id="subTabSwipe" class="space-y-4">
+
+                <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+
+                    <div class="flex items-center gap-3 sm:gap-5 text-xs sm:text-sm font-bold">
+
+                        <span class="flex items-center gap-1.5 text-emerald-600"><i class="fa-solid fa-circle-check"></i><span>Știu: <strong id="knownCountLabel">0</strong></span></span>
+
+                        <span class="flex items-center gap-1.5 text-rose-600"><i class="fa-solid fa-circle-xmark"></i><span>Nu știu: <strong id="unknownCountLabel">0</strong></span></span>
+
+                        <span class="flex items-center gap-1.5 text-slate-500"><i class="fa-regular fa-clock"></i><span>Rămase: <strong id="unseenCountLabel">0</strong></span></span>
+
+                    </div>
+
+
+
+                    <div class="flex flex-wrap items-center gap-2">
+
+                        <button id="filterUnknownBtn" onclick="toggleStudyOnlyUnknown()" class="py-1.5 px-3 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition flex items-center gap-1.5">
+
+                            <i class="fa-solid fa-rotate-left"></i><span id="filterUnknownBtnText">Reia doar „Nu știu”</span>
+
+                        </button>
+
+                        <button onclick="shuffleCurrentDeck()" class="py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition"><i class="fa-solid fa-shuffle"></i> Amestecă</button>
+
+                        <button onclick="resetFlashcardsProgress()" class="py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition">Reset</button>
+
+                    </div>
+
+                </div>
+
+
+
+                <div id="swipeStudyContainer" class="max-w-xl mx-auto space-y-4">
+
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-500 px-1">
+
+                        <span id="currentCardIndexLabel">Cardul 1 din 10</span>
+
+                        <span id="currentCardStatusPill" class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Neparcurs</span>
+
+                    </div>
+
+
+
+                    <div class="relative h-[340px] sm:h-[380px] w-full perspective-1000 select-none">
+
+                        <div id="swipeBadgeKnow" class="pointer-events-none opacity-0 transition-opacity absolute top-6 left-6 z-20 px-4 py-1.5 rounded-xl border-4 border-emerald-500 bg-emerald-500/10 text-emerald-600 font-black text-lg uppercase -rotate-12">ȘTIU ✅</div>
+
+                        <div id="swipeBadgeDontKnow" class="pointer-events-none opacity-0 transition-opacity absolute top-6 right-6 z-20 px-4 py-1.5 rounded-xl border-4 border-rose-500 bg-rose-500/10 text-rose-600 font-black text-lg uppercase rotate-12">NU ȘTIU ❌</div>
+
+
+
+                        <div id="flashcardSwipeWrapper" class="swipe-card w-full h-full cursor-pointer" onclick="flipCurrentCard()">
+
+                            <div id="flashcardInner3D" class="w-full h-full relative transform-style-3d">
+
+                                <div class="backface-hidden absolute inset-0 bg-white rounded-3xl border-2 border-slate-200 shadow-xl p-6 sm:p-8 flex flex-col justify-between">
+
+                                    <div class="flex items-center justify-between text-xs font-bold text-med-600 uppercase">
+
+                                        <span><i class="fa-solid fa-circle-question"></i> Întrebare / Concept</span>
+
+                                        <button type="button" onclick="event.stopPropagation(); openEditCurrentCardModal()" class="p-2 text-slate-400 hover:text-med-600"><i class="fa-solid fa-pen"></i></button>
+
+                                    </div>
+
+                                    <div class="my-auto overflow-y-auto max-h-[210px] flex items-center justify-center">
+
+                                        <p id="cardFrontText" class="text-base sm:text-xl font-bold text-slate-800 text-center leading-relaxed"></p>
+
+                                    </div>
+
+                                    <div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-100"><i class="fa-solid fa-hand-pointer animate-bounce"></i> Atinge cardul pentru a vedea răspunsul</div>
+
+                                </div>
+
+
+
+                                <div class="backface-hidden rotate-y-180 absolute inset-0 bg-gradient-to-br from-med-900 to-slate-900 text-white rounded-3xl border-2 border-med-500/40 shadow-xl p-6 sm:p-8 flex flex-col justify-between">
+
+                                    <div class="flex items-center justify-between text-xs font-bold text-med-300 uppercase">
+
+                                        <span><i class="fa-solid fa-lightbulb"></i> Răspuns Exact (din PDF)</span>
+
+                                        <button type="button" onclick="event.stopPropagation(); openEditCurrentCardModal()" class="p-2 text-slate-300 hover:text-white"><i class="fa-solid fa-pen"></i></button>
+
+                                    </div>
+
+                                    <div class="my-auto overflow-y-auto max-h-[200px] flex flex-col items-center justify-center gap-3">
+
+                                        <p id="cardBackText" class="text-sm sm:text-lg font-semibold text-white text-center leading-relaxed"></p>
+
+                                        <p id="cardCategoryTag" class="text-[11px] text-med-200 bg-white/10 px-3 py-1 rounded-full"></p>
+
+                                    </div>
+
+                                    <div class="text-center text-xs text-med-200/80 pt-2 border-t border-white/10"><i class="fa-solid fa-arrows-left-right"></i> Swipe stânga (Nu știu) sau dreapta (Știu)</div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="grid grid-cols-5 gap-2.5 items-center pt-1">
+
+                        <button onclick="markCurrentCard('unknown')" class="col-span-2 py-4 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-200 font-extrabold text-sm transition flex items-center justify-center gap-2">
+
+                            <i class="fa-solid fa-xmark text-lg"></i><span>Nu știu</span>
+
+                        </button>
+
+                        <button onclick="navigateCardDeck(-1)" class="col-span-1 py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 font-bold transition flex items-center justify-center">
+
+                            <i class="fa-solid fa-rotate-left"></i>
+
+                        </button>
+
+                        <button onclick="markCurrentCard('known')" class="col-span-2 py-4 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-2 border-emerald-200 font-extrabold text-sm transition flex items-center justify-center gap-2">
+
+                            <span>Știu</span><i class="fa-solid fa-check text-lg"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <div id="deckCompletedState" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 text-center max-w-xl mx-auto space-y-5 shadow-sm">
+
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-3xl"><i class="fa-solid fa-trophy"></i></div>
+
+                    <div class="space-y-1">
+
+                        <h3 class="text-xl font-extrabold text-slate-900 font-display" id="deckCompletedTitle">Ai parcurs pachetul!</h3>
+
+                        <p class="text-sm text-slate-500" id="deckCompletedSubtitle"></p>
+
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+
+                        <button id="retryUnknownCardsBtn" onclick="startRetryOnlyUnknown()" class="py-3.5 px-6 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg transition inline-flex items-center gap-2">
+
+                            <i class="fa-solid fa-rotate"></i><span>Reia doar cardurile „Nu știu”</span>
+
+                        </button>
+
+                        <button onclick="restartFullDeck()" class="py-3.5 px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition">Parcurge toate</button>
+
+                    </div>
+
+                </div>
+
+
+
+                <div id="emptyCardsState" class="hidden bg-white rounded-3xl border-2 border-dashed border-slate-200 p-8 text-center">
+
+                    <div class="w-14 h-14 rounded-2xl bg-med-50 text-med-600 flex items-center justify-center mx-auto mb-3 text-xl"><i class="fa-solid fa-layer-group"></i></div>
+
+                    <h3 class="text-base font-bold text-slate-800">Niciun flashcard în acest folder</h3>
+
+                    <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-1 mb-5">Încarcă un PDF și apasă pe „Generează Flashcarduri din PDF”.</p>
+
+                    <button onclick="openGenerateFlashcardsModal()" class="py-2.5 px-5 rounded-xl bg-med-600 hover:bg-med-700 text-white font-bold text-sm transition inline-flex items-center gap-2">
+
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generează din PDF cu AI
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- SUB-TAB 2: MANAGE -->
+
+            <div id="subTabManage" class="hidden space-y-4">
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+
+                    <div class="relative flex-1">
+
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                        <input type="text" id="searchCardsInput" oninput="renderManageCardsList()" placeholder="Caută în carduri..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none text-sm">
+
+                    </div>
+
+                    <button onclick="openCardModal()" class="py-2.5 px-4 rounded-xl bg-med-600 hover:bg-med-700 text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 shrink-0">
+
+                        <i class="fa-solid fa-plus"></i><span>Adaugă Manual</span>
+
+                    </button>
+
+                </div>
+
+                <div id="manageCardsList" class="space-y-3"></div>
+
+            </div>
+
+
+
+            <!-- SUB-TAB 3: TESTE GRILĂ -->
+
+            <div id="subTabTests" class="hidden space-y-4">
+
+                <div id="testsListContainer" class="space-y-4">
+
+                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+                        <div class="text-xs sm:text-sm text-indigo-950 space-y-1">
+
+                            <div class="font-bold flex items-center gap-2"><i class="fa-solid fa-circle-info text-indigo-600"></i><span>Stil Oficial Admitere UMFCD (60 Întrebări)</span></div>
+
+                            <p class="text-indigo-800/90 text-xs leading-relaxed">30 Complement Simplu (A-E) + 30 Complement Grupat (1,2,3,4 cu cheie oficială), generate asincron cu explicații detaliate.</p>
+
+                        </div>
+
+                        <button onclick="openGenerateTestModal()" class="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shrink-0 transition flex items-center gap-2 shadow-sm">
+
+                            <i class="fa-solid fa-plus"></i><span>Test Nou (60 Grile)</span>
+
+                        </button>
+
+                    </div>
+
+                    <div id="savedTestsList" class="space-y-3"></div>
+
+                </div>
+
+
+
+                <div id="activeQuizPlayer" class="hidden space-y-5">
+
+                    <div class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
+
+                        <div id="asyncQuizBanner" class="hidden bg-indigo-600 text-white rounded-2xl p-3 text-xs font-bold flex items-center justify-between gap-3 shadow-sm">
+
+                            <div class="flex items-center gap-2.5"><i class="fa-solid fa-spinner fa-spin text-sm"></i><span id="asyncQuizBannerText">Se generează asincron restul grilelor în fundal... Poți rezolva primele întrebări!</span></div>
+
+                            <span id="asyncQuizBannerCount" class="px-2.5 py-1 rounded-lg bg-white/20 text-[11px] font-extrabold shrink-0">10 / 60</span>
+
+                        </div>
+
+
+
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+
+                            <button onclick="closeActiveQuiz()" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition">
+
+                                <i class="fa-solid fa-arrow-left"></i> Înapoi la teste
+
+                            </button>
+
+                            <div class="flex items-center gap-2">
+
+                                <span id="quizScoreLiveBadge" class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-800 font-extrabold text-xs">Scor: 0 / 60</span>
+
+                                <button onclick="finishAndGradeQuiz()" class="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition">Finalizează & Bareme</button>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-100">
+
+                            <div>
+
+                                <h3 id="activeQuizTitle" class="font-extrabold text-base sm:text-lg text-slate-900">Test Grilă</h3>
+
+                                <p id="activeQuizMeta" class="text-xs text-slate-500"></p>
+
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-1.5">
+
+                                <button onclick="setQuizFilter('all')" id="qFilterAll" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white">Toate</button>
+
+                                <button onclick="setQuizFilter('cs')" id="qFilterCS" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">Compl. Simplu</button>
+
+                                <button onclick="setQuizFilter('cg')" id="qFilterCG" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">Compl. Grupat</button>
+
+                                <button onclick="setQuizFilter('wrong')" id="qFilterWrong" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700">Greșite</button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-950">
+
+                        <div class="font-extrabold mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-key text-amber-600"></i><span>Cheie COMPLEMENT GRUPAT (1, 2, 3, 4):</span></div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 font-semibold">
+
+                            <div class="bg-white/80 px-2 py-1 rounded border border-amber-200"><strong>A</strong> = 1, 2, 3</div>
+
+                            <div class="bg-white/80 px-2 py-1 rounded border border-amber-200"><strong>B</strong> = 1, 3</div>
+
+                            <div class="bg-white/80 px-2 py-1 rounded border border-amber-200"><strong>C</strong> = 2, 4</div>
+
+                            <div class="bg-white/80 px-2 py-1 rounded border border-amber-200"><strong>D</strong> = doar 4</div>
+
+                            <div class="bg-white/80 px-2 py-1 rounded border border-amber-200 col-span-2 sm:col-span-1"><strong>E</strong> = toate/niciuna</div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div id="quizQuestionsContainer" class="space-y-4"></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <input type="file" id="importJsonInput" accept=".json,application/json" class="hidden" onchange="handleImportBackup(event)">
+
+
+
+    <!-- MODALE -->
+
+    <div id="folderModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+
+            <div class="flex items-center justify-between"><h3 id="folderModalTitle" class="text-lg font-extrabold text-slate-900 font-display">Folder Nou</h3><button onclick="closeFolderModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>
+
+            <form onsubmit="saveFolderForm(event)" class="space-y-4">
+
+                <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Nume Folder</label><input type="text" id="folderNameInput" required placeholder="ex: Capitolul 1" class="w-full px-4 py-3 rounded-2xl border border-slate-200 outline-none"></div>
+
+                <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Descriere</label><input type="text" id="folderDescInput" placeholder="ex: Curs pag. 1-20" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 outline-none text-sm"></div>
+
+                <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeFolderModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm">Anulează</button><button type="submit" class="py-2.5 px-5 rounded-xl bg-med-600 text-white font-bold text-sm">Salvează</button></div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="cardModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+
+            <div class="flex items-center justify-between"><h3 id="cardModalTitle" class="text-lg font-extrabold text-slate-900 font-display">Card</h3><button onclick="closeCardModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>
+
+            <form onsubmit="saveCardForm(event)" class="space-y-4">
+
+                <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Față</label><textarea id="cardFrontInput" required rows="3" class="w-full px-4 py-3 rounded-2xl border border-slate-200 outline-none text-sm"></textarea></div>
+
+                <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Verso</label><textarea id="cardBackInput" required rows="4" class="w-full px-4 py-3 rounded-2xl border border-slate-200 outline-none text-sm"></textarea></div>
+
+                <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Tag</label><input type="text" id="cardTagInput" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 outline-none text-sm"></div>
+
+                <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeCardModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm">Anulează</button><button type="submit" class="py-2.5 px-5 rounded-xl bg-med-600 text-white font-bold text-sm">Salvează</button></div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="generateCardsModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+
+            <div class="flex items-center justify-between"><h3 class="text-lg font-extrabold text-slate-900 font-display flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-med-600"></i><span>Generează Flashcarduri</span></h3><button onclick="closeGenerateFlashcardsModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>
+
+            <p class="text-xs sm:text-sm text-slate-600">AI-ul va extrage conceptele cheie din PDF-ul tău.</p>
+
+            <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Număr carduri</label><select id="genCardsCountSelect" class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold"><option value="15">15</option><option value="25" selected>25 (Recomandat)</option><option value="40">40</option></select></div>
+
+            <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeGenerateFlashcardsModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm">Anulează</button><button type="button" onclick="startGeneratingFlashcards()" class="py-3 px-5 rounded-xl bg-med-600 text-white font-bold text-sm shadow-md">Generează</button></div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="generateTestModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+
+            <div class="flex items-center justify-between"><h3 class="text-lg font-extrabold text-slate-900 font-display flex items-center gap-2"><i class="fa-solid fa-graduation-cap text-indigo-600"></i><span>Generator Test UMFCD</span></h3><button onclick="closeGenerateTestModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>
+
+            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5 text-xs text-indigo-950 space-y-1">
+
+                <div class="font-bold">Structură Test:</div>
+
+                <ul class="list-disc list-inside"><li>30 Complement Simplu (A-E)</li><li>30 Complement Grupat (1,2,3,4 cu cheie A-E)</li><li>Explicații complete din PDF</li></ul>
+
+            </div>
+
+            <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Titlu Test</label><input type="text" id="testTitleInput" placeholder="Test Admitere" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm outline-none font-medium"></div>
+
+            <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Format</label><select id="testFormatSelect" class="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 font-bold text-sm"><option value="60" selected>Complet: 60 întrebări (30 Simplu + 30 Grupat)</option><option value="20">Mini-Test: 20 întrebări</option></select></div>
+
+            <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeGenerateTestModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm">Anulează</button><button type="button" onclick="startGeneratingTest()" class="py-3 px-5 rounded-xl bg-indigo-600 text-white font-bold text-sm shadow-md">Generează Testul</button></div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="sourceTextModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+
+            <div class="flex items-center justify-between shrink-0"><h3 class="text-lg font-extrabold text-slate-900 font-display">Material Sursă PDF</h3><button onclick="closeSourceTextModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>
+
+            <textarea id="sourceTextEditor" rows="14" class="w-full flex-1 p-4 rounded-2xl border border-slate-200 bg-slate-50 font-mono text-xs outline-none overflow-y-auto"></textarea>
+
+            <div class="flex items-center justify-between pt-2 shrink-0"><span id="sourceCharCount" class="text-xs text-slate-500">0 caractere</span><div class="flex gap-2"><button type="button" onclick="closeSourceTextModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm">Închide</button><button type="button" onclick="saveManualSourceText()" class="py-2.5 px-5 rounded-xl bg-med-600 text-white font-bold text-sm">Salvează</button></div></div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+
+            <div class="flex items-center justify-between"><h3 class="text-lg font-extrabold text-slate-900 font-display">Setări Netlify & API Key</h3><button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs text-slate-600 space-y-1">
+
+                <p><strong>Pe Netlify:</strong> Ia o cheie gratuită de pe <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-med-600 underline font-bold">Google AI Studio</a> și lipește-o mai jos.</p>
+
+            </div>
+
+            <div><label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Gemini API Key</label><input type="password" id="customApiKeyInput" placeholder="AIzaSy..." class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm font-mono outline-none"></div>
+
+            <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeSettingsModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm">Închide</button><button type="button" onclick="saveSettingsModal()" class="py-2.5 px-5 rounded-xl bg-med-600 text-white font-bold text-sm">Salvează</button></div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+
+            <h3 id="confirmModalTitle" class="text-lg font-extrabold text-slate-900">Confirmare</h3>
+
+            <p id="confirmModalMessage" class="text-xs sm:text-sm text-slate-500"></p>
+
+            <div class="flex justify-center gap-2.5 pt-2"><button type="button" onclick="closeConfirmModal()" class="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm">Anulează</button><button type="button" id="confirmModalActionBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 text-white font-bold text-sm">Confirmă</button></div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="loadingOverlay" class="hidden fixed inset-0 z-[80] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center space-y-4">
+
+            <div class="w-16 h-16 rounded-2xl bg-med-50 text-med-600 flex items-center justify-center mx-auto text-2xl"><i class="fa-solid fa-spinner fa-spin"></i></div>
+
+            <h3 id="loadingTitle" class="text-lg font-extrabold text-slate-900 font-display">Se procesează materialul...</h3>
+
+            <p id="loadingSubtitle" class="text-xs sm:text-sm text-slate-500">Așteaptă câteva secunde.</p>
+
+            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden"><div id="loadingProgressBar" class="bg-gradient-to-r from-med-600 to-indigo-600 h-full transition-all duration-300" style="width: 15%"></div></div>
+
+            <div id="loadingBatchInfo" class="text-xs font-bold text-med-700"></div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- LOGICA JS -->
+
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+
+
+        if (window.pdfjsLib) {
+
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        }
+
+
+
+        const state = {
+
+            firebaseReady: false,
+
+            authUser: null,
+
+            profileKey: null,
+
+            usernameDisplay: '',
+
+            customApiKey: '',
+
+            folders: [],
+
+            sources: {},
+
+            tests: [],
+
+            activeFolderId: null,
+
+            activeTab: 'swipe',
+
+            studyOnlyUnknown: false,
+
+            studyDeckIds: [],
+
+            currentCardPointer: 0,
+
+            isCardFlipped: false,
+
+            editingCardId: null,
+
+            editingFolderId: null,
+
+            activeTestId: null,
+
+            quizFilter: 'all'
+
+        };
+
+
+
+        let db = null;
+
+        let auth = null;
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'medflash-umfcd-app';
+
+        let unsubscribeFolders = null;
+
+        let unsubscribeTests = null;
+
+
+
+        async function initCloudConnection() {
+
+            try {
+
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+
+                    const firebaseConfig = JSON.parse(__firebase_config);
+
+                    const app = initializeApp(firebaseConfig);
+
+                    auth = getAuth(app);
+
+                    db = getFirestore(app);
+
+
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+
+                        await signInWithCustomToken(auth, __initial_auth_token);
+
+                    } else {
+
+                        await signInAnonymously(auth);
+
+                    }
+
+
+
+                    onAuthStateChanged(auth, (user) => {
+
+                        state.authUser = user;
+
+                        state.firebaseReady = !!user;
+
+                        updateSyncBadge(state.firebaseReady ? 'cloud' : 'memory');
+
+                    });
+
+                } else {
+
+                    updateSyncBadge('github');
+
+                }
+
+            } catch (err) {
+
+                console.warn("Mod autonom:", err);
+
+                updateSyncBadge('github');
+
+            }
+
+        }
+
+
+
+        function updateSyncBadge(mode) {
+
+            const dot = document.querySelector('#syncStatusBadge span:first-child');
+
+            const txt = document.getElementById('syncStatusText');
+
+            if (!dot || !txt) return;
+
+            if (mode === 'cloud') {
+
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block';
+
+                txt.textContent = 'Sincronizat în Cloud';
+
+            } else {
+
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-sky-500 inline-block';
+
+                txt.textContent = 'Mod Local / Gata de Netlify';
+
+            }
+
+        }
+
+
+
+        function normalizeProfileKey(username, pin) {
+
+            const cleanUser = (username || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+
+            const cleanPin = (pin || '').trim().replace(/[^a-zA-Z0-9]/g, '');
+
+            return cleanPin ? `${cleanUser}__pin_${cleanPin}` : `${cleanUser}__nopin`;
+
+        }
+
+
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+
+            e.preventDefault();
+
+            const rawUser = document.getElementById('usernameInput').value.trim();
+
+            const rawPin = document.getElementById('pinInput').value.trim();
+
+            if (!rawUser) {
+
+                showToast('Introdu un nume de utilizator!', 'error');
+
+                return;
+
+            }
+
+
+
+            state.usernameDisplay = rawUser;
+
+            state.profileKey = normalizeProfileKey(rawUser, rawPin);
+
+            document.getElementById('currentUserBadge').textContent = rawUser;
+
+            document.getElementById('authScreen').classList.add('hidden');
+
+
+
+            if (state.firebaseReady && state.authUser) {
+
+                await attachCloudListenersForProfile(state.profileKey);
+
+            } else {
+
+                renderDashboard();
+
+            }
+
+            showToast(`Bine ai venit, ${rawUser}!`, 'success');
+
+        });
+
+
+
+        window.switchUserAccount = function() {
+
+            document.getElementById('authScreen').classList.remove('hidden');
+
+        };
+
+
+
+        async function attachCloudListenersForProfile(profileKey) {
+
+            if (!state.authUser || !db) return;
+
+            if (unsubscribeFolders) unsubscribeFolders();
+
+            if (unsubscribeTests) unsubscribeTests();
+
+
+
+            try {
+
+                const userDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'medstudy_users', profileKey);
+
+                const userSnap = await getDoc(userDocRef);
+
+                if (userSnap.exists() && userSnap.data().customApiKey) {
+
+                    state.customApiKey = userSnap.data().customApiKey;
+
+                    document.getElementById('customApiKeyInput').value = state.customApiKey;
+
+                }
+
+            } catch (e) { console.warn(e); }
+
+
+
+            const foldersCol = collection(db, 'artifacts', appId, 'public', 'data', 'medstudy_folders');
+
+            unsubscribeFolders = onSnapshot(foldersCol, (snapshot) => {
+
+                const loadedFolders = [];
+
+                snapshot.forEach((docSnap) => {
+
+                    const data = docSnap.data();
+
+                    if (data && data.ownerKey === profileKey) {
+
+                        let parsedCards = [];
+
+                        if (typeof data.flashcardsJson === 'string') {
+
+                            try { parsedCards = JSON.parse(data.flashcardsJson); } catch (_) { parsedCards = []; }
+
+                        }
+
+                        loadedFolders.push({
+
+                            id: docSnap.id,
+
+                            ownerKey: data.ownerKey,
+
+                            name: data.name || 'Folder',
+
+                            description: data.description || '',
+
+                            pdfName: data.pdfName || '',
+
+                            pdfPageCount: data.pdfPageCount || 0,
+
+                            createdAt: data.createdAt || 0,
+
+                            flashcards: parsedCards
+
+                        });
+
+                    }
+
+                });
+
+                loadedFolders.sort((a, b) => b.createdAt - a.createdAt);
+
+                state.folders = loadedFolders;
+
+                if (state.activeFolderId) {
+
+                    refreshActiveFolderUI(false);
+
+                } else {
+
+                    renderDashboard();
+
+                }
+
+            });
+
+
+
+            const testsCol = collection(db, 'artifacts', appId, 'public', 'data', 'medstudy_tests');
+
+            unsubscribeTests = onSnapshot(testsCol, (snapshot) => {
+
+                const loadedTests = [];
+
+                snapshot.forEach((docSnap) => {
+
+                    const data = docSnap.data();
+
+                    if (data && data.ownerKey === profileKey) {
+
+                        let parsedQuestions = [];
+
+                        if (typeof data.questionsJson === 'string') {
+
+                            try { parsedQuestions = JSON.parse(data.questionsJson); } catch (_) { parsedQuestions = []; }
+
+                        }
+
+                        loadedTests.push({
+
+                            id: docSnap.id,
+
+                            ownerKey: data.ownerKey,
+
+                            folderId: data.folderId,
+
+                            title: data.title || 'Test',
+
+                            createdAt: data.createdAt || 0,
+
+                            feedbackMode: data.feedbackMode || 'instant',
+
+                            completed: !!data.completed,
+
+                            questions: parsedQuestions
+
+                        });
+
+                    }
+
+                });
+
+                loadedTests.sort((a, b) => b.createdAt - a.createdAt);
+
+                state.tests = loadedTests;
+
+                renderDashboardStats();
+
+                if (state.activeFolderId) renderSavedTestsList();
+
+            });
+
+        }
+
+
+
+        async function persistFolderToCloud(folder) {
+
+            if (!state.firebaseReady || !state.authUser || !db) return;
+
+            try {
+
+                const folderRef = doc(db, 'artifacts', appId, 'public', 'data', 'medstudy_folders', folder.id);
+
+                await setDoc(folderRef, {
+
+                    ownerKey: folder.ownerKey,
+
+                    name: folder.name,
+
+                    description: folder.description || '',
+
+                    pdfName: folder.pdfName || '',
+
+                    pdfPageCount: folder.pdfPageCount || 0,
+
+                    createdAt: folder.createdAt || Date.now(),
+
+                    flashcardsJson: JSON.stringify(folder.flashcards || [])
+
+                });
+
+            } catch (err) { console.error(err); }
+
+        }
+
+
+
+        async function persistSourceTextToCloud(folderId, text) {
+
+            const safeText = (text || '').slice(0, 750000);
+
+            state.sources[folderId] = safeText;
+
+            if (!state.firebaseReady || !state.authUser || !db) return;
+
+            try {
+
+                const sourceRef = doc(db, 'artifacts', appId, 'public', 'data', 'medstudy_sources', folderId);
+
+                await setDoc(sourceRef, { ownerKey: state.profileKey, folderId, text: safeText, updatedAt: Date.now() });
+
+            } catch (err) { console.error(err); }
+
+        }
+
+
+
+        async function ensureSourceTextLoaded(folderId) {
+
+            if (state.sources[folderId]) return state.sources[folderId];
+
+            if (!state.firebaseReady || !state.authUser || !db) return '';
+
+            try {
+
+                const sourceRef = doc(db, 'artifacts', appId, 'public', 'data', 'medstudy_sources', folderId);
+
+                const snap = await getDoc(sourceRef);
+
+                if (snap.exists()) {
+
+                    const txt = snap.data().text || '';
+
+                    state.sources[folderId] = txt;
+
+                    return txt;
+
+                }
+
+            } catch (err) { console.warn(err); }
+
+            return '';
+
+        }
+
+
+
+        async function persistTestToCloud(testObj) {
+
+            if (!state.firebaseReady || !state.authUser || !db) return;
+
+            try {
+
+                const testRef = doc(db, 'artifacts', appId, 'public', 'data', 'medstudy_tests', testObj.id);
+
+                await setDoc(testRef, {
+
+                    ownerKey: testObj.ownerKey,
+
+                    folderId: testObj.folderId,
+
+                    title: testObj.title,
+
+                    createdAt: testObj.createdAt || Date.now(),
+
+                    feedbackMode: testObj.feedbackMode || 'instant',
+
+                    completed: !!testObj.completed,
+
+                    questionsJson: JSON.stringify(testObj.questions || [])
+
+                });
+
+            } catch (err) { console.error(err); }
+
+        }
+
+
+
+        function renderDashboardStats() {
+
+            document.getElementById('statTotalFolders').textContent = state.folders.length;
+
+            const totalCards = state.folders.reduce((acc, f) => acc + (f.flashcards ? f.flashcards.length : 0), 0);
+
+            document.getElementById('statTotalCards').textContent = totalCards;
+
+            document.getElementById('statTotalTests').textContent = state.tests.length;
+
+        }
+
+
+
+        function renderDashboard() {
+
+            renderDashboardStats();
+
+            const grid = document.getElementById('foldersGrid');
+
+            const emptyState = document.getElementById('emptyFoldersState');
+
+            grid.innerHTML = '';
+
+
+
+            if (state.folders.length === 0) {
+
+                emptyState.classList.remove('hidden');
+
+                return;
+
+            }
+
+            emptyState.classList.add('hidden');
+
+
+
+            state.folders.forEach((folder) => {
+
+                const cards = folder.flashcards || [];
+
+                const knownCount = cards.filter(c => c.status === 'known').length;
+
+                const unknownCount = cards.filter(c => c.status === 'unknown').length;
+
+                const folderTests = state.tests.filter(t => t.folderId === folder.id);
+
+                const progressPercent = cards.length > 0 ? Math.round((knownCount / cards.length) * 100) : 0;
+
+
+
+                const cardEl = document.createElement('div');
+
+                cardEl.className = 'bg-white rounded-3xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between cursor-pointer group';
+
+                cardEl.onclick = () => openFolder(folder.id);
+
+
+
+                cardEl.innerHTML = `
+
+                    <div>
+
+                        <div class="flex items-start justify-between gap-2 mb-3">
+
+                            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-med-500 to-teal-600 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition"><i class="fa-solid fa-book-medical text-lg"></i></div>
+
+                            <button type="button" onclick="event.stopPropagation(); confirmDeleteFolder('${folder.id}')" class="w-8 h-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition"><i class="fa-regular fa-trash-can text-sm"></i></button>
+
+                        </div>
+
+                        <h3 class="font-extrabold text-base sm:text-lg text-slate-900 line-clamp-1">${escapeHtml(folder.name)}</h3>
+
+                        <p class="text-xs text-slate-500 line-clamp-1 mt-0.5">${escapeHtml(folder.description || (folder.pdfName ? `PDF: ${folder.pdfName}` : 'Fără PDF'))}</p>
+
+                        <div class="flex flex-wrap items-center gap-2 mt-4 text-xs font-semibold">
+
+                            <span class="px-2.5 py-1 rounded-xl bg-amber-50 text-amber-800"><i class="fa-solid fa-layer-group mr-1"></i>${cards.length} carduri</span>
+
+                            <span class="px-2.5 py-1 rounded-xl bg-indigo-50 text-indigo-800"><i class="fa-solid fa-list-check mr-1"></i>${folderTests.length} teste</span>
+
+                            ${unknownCount > 0 ? `<span class="px-2.5 py-1 rounded-xl bg-rose-50 text-rose-700">${unknownCount} de reluat</span>` : ''}
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+
+                        <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1"><span>Progres</span><span class="text-med-700">${progressPercent}%</span></div>
+
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-med-500 h-full" style="width: ${progressPercent}%"></div></div>
+
+                    </div>
+
+                `;
+
+                grid.appendChild(cardEl);
+
+            });
+
+        }
+
+
+
+        window.openFolderModal = function() {
+
+            state.editingFolderId = null;
+
+            document.getElementById('folderModalTitle').textContent = 'Folder Nou';
+
+            document.getElementById('folderNameInput').value = '';
+
+            document.getElementById('folderDescInput').value = '';
+
+            document.getElementById('folderModal').classList.remove('hidden');
+
+        };
+
+
+
+        window.openRenameFolderModal = function() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            state.editingFolderId = folder.id;
+
+            document.getElementById('folderModalTitle').textContent = 'Redenumește Folderul';
+
+            document.getElementById('folderNameInput').value = folder.name;
+
+            document.getElementById('folderDescInput').value = folder.description || '';
+
+            document.getElementById('folderModal').classList.remove('hidden');
+
+        };
+
+
+
+        window.closeFolderModal = function() {
+
+            document.getElementById('folderModal').classList.add('hidden');
+
+        };
+
+
+
+        window.saveFolderForm = async function(e) {
+
+            e.preventDefault();
+
+            const name = document.getElementById('folderNameInput').value.trim();
+
+            const desc = document.getElementById('folderDescInput').value.trim();
+
+            if (!name) return;
+
+
+
+            if (state.editingFolderId) {
+
+                const folder = state.folders.find(f => f.id === state.editingFolderId);
+
+                if (folder) {
+
+                    folder.name = name;
+
+                    folder.description = desc;
+
+                    await persistFolderToCloud(folder);
+
+                    refreshActiveFolderUI(false);
+
+                }
+
+            } else {
+
+                const newFolder = {
+
+                    id: 'fld_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+
+                    ownerKey: state.profileKey,
+
+                    name,
+
+                    description: desc,
+
+                    pdfName: '',
+
+                    pdfPageCount: 0,
+
+                    createdAt: Date.now(),
+
+                    flashcards: []
+
+                };
+
+                state.folders.unshift(newFolder);
+
+                await persistFolderToCloud(newFolder);
+
+                closeFolderModal();
+
+                openFolder(newFolder.id);
+
+                return;
+
+            }
+
+            closeFolderModal();
+
+            renderDashboard();
+
+        };
+
+
+
+        window.confirmDeleteFolder = function(folderId) {
+
+            const folder = state.folders.find(f => f.id === folderId);
+
+            if (!folder) return;
+
+            openConfirmModal(`Ștergi folderul „${folder.name}”?`, 'Toate cardurile și testele vor fi șterse.', async () => {
+
+                state.folders = state.folders.filter(f => f.id !== folderId);
+
+                if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'medstudy_folders', folderId));
+
+                renderDashboard();
+
+            });
+
+        };
+
+
+
+        function getActiveFolder() {
+
+            return state.folders.find(f => f.id === state.activeFolderId) || null;
+
+        }
+
+
+
+        window.openFolder = async function(folderId) {
+
+            state.activeFolderId = folderId;
+
+            state.studyOnlyUnknown = false;
+
+            state.currentCardPointer = 0;
+
+            state.isCardFlipped = false;
+
+
+
+            document.getElementById('dashboardView').classList.add('hidden');
+
+            document.getElementById('folderDetailView').classList.remove('hidden');
+
+            document.getElementById('backToFoldersBtn').classList.remove('hidden');
+
+            document.getElementById('backToFoldersBtn').classList.add('flex');
+
+
+
+            await ensureSourceTextLoaded(folderId);
+
+            refreshActiveFolderUI(true);
+
+        };
+
+
+
+        window.navigateToDashboard = function() {
+
+            state.activeFolderId = null;
+
+            state.activeTestId = null;
+
+            document.getElementById('folderDetailView').classList.add('hidden');
+
+            document.getElementById('dashboardView').classList.remove('hidden');
+
+            document.getElementById('backToFoldersBtn').classList.add('hidden');
+
+            document.getElementById('backToFoldersBtn').classList.remove('flex');
+
+            document.getElementById('headerTitle').textContent = 'MedFlash UMF';
+
+            renderDashboard();
+
+        };
+
+
+
+        function refreshActiveFolderUI(resetDeck = false) {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+
+
+            document.getElementById('headerTitle').textContent = folder.name;
+
+            document.getElementById('activeFolderTitle').textContent = folder.name;
+
+
+
+            const sourceText = state.sources[folder.id] || '';
+
+            const pdfStatusEl = document.getElementById('activeFolderPdfStatus');
+
+            if (folder.pdfName) {
+
+                pdfStatusEl.innerHTML = `<i class="fa-solid fa-file-circle-check text-emerald-600"></i><span class="font-semibold text-slate-700">${escapeHtml(folder.pdfName)}</span> <span class="text-xs text-slate-400">(${folder.pdfPageCount} pagini)</span>`;
+
+                document.getElementById('uploadPdfBtnLabel').textContent = 'Schimbă PDF';
+
+            } else if (sourceText.length > 0) {
+
+                pdfStatusEl.innerHTML = `<i class="fa-solid fa-file-lines text-med-600"></i><span>Text sursă încărcat (${sourceText.length.toLocaleString('ro-RO')} caractere)</span>`;
+
+            } else {
+
+                pdfStatusEl.innerHTML = `<i class="fa-regular fa-file-pdf text-rose-500"></i><span>Niciun PDF încărcat încă</span>`;
+
+                document.getElementById('uploadPdfBtnLabel').textContent = 'Încarcă PDF';
+
+            }
+
+
+
+            const cards = folder.flashcards || [];
+
+            const folderTests = state.tests.filter(t => t.folderId === folder.id);
+
+            document.getElementById('badgeCountSwipe').textContent = cards.length;
+
+            document.getElementById('badgeCountTests').textContent = folderTests.length;
+
+
+
+            if (resetDeck || state.studyDeckIds.length === 0) rebuildStudyDeck();
+
+            else updateStudyStatsAndCard();
+
+
+
+            renderManageCardsList();
+
+            renderSavedTestsList();
+
+        }
+
+
+
+        window.switchFolderTab = function(tabName) {
+
+            state.activeTab = tabName;
+
+            ['swipe', 'manage', 'tests'].forEach(t => {
+
+                const subView = document.getElementById('subTab' + t.charAt(0).toUpperCase() + t.slice(1));
+
+                const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+
+                if (t === tabName) {
+
+                    subView.classList.remove('hidden');
+
+                    btn.className = 'flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 bg-white text-slate-900 shadow-sm';
+
+                } else {
+
+                    subView.classList.add('hidden');
+
+                    btn.className = 'flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900';
+
+                }
+
+            });
+
+        };
+
+
+
+        window.handlePdfUpload = async function(event) {
+
+            const file = event.target.files?.[0];
+
+            if (!file) return;
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+
+
+            showLoadingOverlay('Se citește PDF-ul...', 'Extragem textul pagină cu pagină.', 15);
+
+            try {
+
+                const arrayBuffer = await file.arrayBuffer();
+
+                const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+                const numPages = pdf.numPages;
+
+                let fullText = '';
+
+
+
+                for (let i = 1; i <= numPages; i++) {
+
+                    const page = await pdf.getPage(i);
+
+                    const txt = await page.getTextContent();
+
+                    fullText += `\n[Pagina ${i}]\n` + txt.items.map(item => item.str).join(' ') + '\n';
+
+                }
+
+
+
+                folder.pdfName = file.name;
+
+                folder.pdfPageCount = numPages;
+
+                await persistSourceTextToCloud(folder.id, fullText.trim());
+
+                await persistFolderToCloud(folder);
+
+
+
+                hideLoadingOverlay();
+
+                refreshActiveFolderUI(false);
+
+                showToast(`PDF încărcat cu succes (${numPages} pagini)!`, 'success');
+
+            } catch (err) {
+
+                console.error(err);
+
+                hideLoadingOverlay();
+
+                showToast('Eroare la citirea PDF-ului.', 'error');
+
+            } finally {
+
+                event.target.value = '';
+
+            }
+
+        };
+
+
+
+        window.openSourceTextModal = async function() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const txt = await ensureSourceTextLoaded(folder.id);
+
+            document.getElementById('sourceTextEditor').value = txt;
+
+            document.getElementById('sourceCharCount').textContent = `${txt.length.toLocaleString('ro-RO')} caractere`;
+
+            document.getElementById('sourceTextModal').classList.remove('hidden');
+
+        };
+
+
+
+        window.closeSourceTextModal = function() {
+
+            document.getElementById('sourceTextModal').classList.add('hidden');
+
+        };
+
+
+
+        window.saveManualSourceText = async function() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const text = document.getElementById('sourceTextEditor').value;
+
+            await persistSourceTextToCloud(folder.id, text);
+
+            closeSourceTextModal();
+
+            refreshActiveFolderUI(false);
+
+            showToast('Textul sursă a fost salvat!', 'success');
+
+        };
+
+
+
+        async function callGeminiStructured(systemPrompt, userPrompt, responseSchema) {
+
+            const apiKey = state.customApiKey || "";
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+
+
+            const payload = {
+
+                contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+
+                generationConfig: {
+
+                    responseMimeType: "application/json",
+
+                    responseSchema: responseSchema,
+
+                    temperature: 0.2
+
+                }
+
+            };
+
+
+
+            const response = await fetch(apiUrl, {
+
+                method: 'POST',
+
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify(payload)
+
+            });
+
+
+
+            if (!response.ok) {
+
+                throw new Error(`Eroare server AI: ${response.status}`);
+
+            }
+
+
+
+            const result = await response.json();
+
+            const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!jsonText) throw new Error("Răspuns gol de la AI.");
+
+            return JSON.parse(jsonText);
+
+        }
+
+
+
+        function getPdfChunkForBatch(fullText, batchIndex, totalBatches, maxChars = 16000) {
+
+            if (!fullText) return '';
+
+            if (fullText.length <= maxChars || totalBatches <= 1) return fullText.slice(0, maxChars);
+
+            const step = Math.max(1000, Math.floor((fullText.length - maxChars) / (totalBatches - 1)));
+
+            const start = Math.min(batchIndex * step, Math.max(0, fullText.length - maxChars));
+
+            return fullText.slice(start, start + maxChars);
+
+        }
+
+
+
+        window.openGenerateFlashcardsModal = async function() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const txt = await ensureSourceTextLoaded(folder.id);
+
+            if (!txt || txt.length < 30) {
+
+                showToast('Încarcă un PDF în acest folder mai întâi!', 'error');
+
+                return;
+
+            }
+
+            document.getElementById('generateCardsModal').classList.remove('hidden');
+
+        };
+
+
+
+        window.closeGenerateFlashcardsModal = function() {
+
+            document.getElementById('generateCardsModal').classList.add('hidden');
+
+        };
+
+
+
+        window.startGeneratingFlashcards = async function() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const sourceText = await ensureSourceTextLoaded(folder.id);
+
+            const totalCount = parseInt(document.getElementById('genCardsCountSelect').value, 10) || 25;
+
+            closeGenerateFlashcardsModal();
+
+
+
+            showLoadingOverlay('Se generează flashcardurile...', 'AI-ul analizează textul PDF.', 30);
+
+
+
+            const systemPrompt = `Ești profesor universitar la UMF Carol Davila. Creează flashcarduri fidele textului PDF furnizat, cu întrebare pe față (front) și răspuns exact pe verso (back).`;
+
+            const schema = {
+
+                type: "ARRAY",
+
+                items: {
+
+                    type: "OBJECT",
+
+                    properties: {
+
+                        "front": { "type": "STRING" },
+
+                        "back": { "type": "STRING" },
+
+                        "category": { "type": "STRING" }
+
+                    },
+
+                    required: ["front", "back", "category"]
+
+                }
+
+            };
+
+
+
+            try {
+
+                const chunk = getPdfChunkForBatch(sourceText, 0, 1, 20000);
+
+                const list = await callGeminiStructured(systemPrompt, `Generează ${totalCount} flashcarduri din acest text:\n${chunk}`, schema);
+
+
+
+                const newCards = list.map((item, idx) => ({
+
+                    id: 'crd_' + Date.now() + '_' + idx,
+
+                    front: item.front,
+
+                    back: item.back,
+
+                    category: item.category || folder.name,
+
+                    status: 'unseen'
+
+                }));
+
+
+
+                folder.flashcards = [...(folder.flashcards || []), ...newCards];
+
+                await persistFolderToCloud(folder);
+
+
+
+                hideLoadingOverlay();
+
+                switchFolderTab('swipe');
+
+                refreshActiveFolderUI(true);
+
+                showToast(`Generate ${newCards.length} flashcarduri!`, 'success');
+
+            } catch (err) {
+
+                console.error(err);
+
+                hideLoadingOverlay();
+
+                showToast('Eroare la generarea flashcardurilor. Verifică cheia API în Setări.', 'error');
+
+            }
+
+        };
+
+
+
+        // FLASHCARD SWIPE LOGIC
+
+        function rebuildStudyDeck() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const cards = folder.flashcards || [];
+
+            if (state.studyOnlyUnknown) {
+
+                state.studyDeckIds = cards.filter(c => c.status === 'unknown').map(c => c.id);
+
+            } else {
+
+                state.studyDeckIds = cards.map(c => c.id);
+
+            }
+
+            state.currentCardPointer = 0;
+
+            state.isCardFlipped = false;
+
+            updateStudyStatsAndCard();
+
+        }
+
+
+
+        function updateStudyStatsAndCard() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const cards = folder.flashcards || [];
+
+
+
+            const knownCount = cards.filter(c => c.status === 'known').length;
+
+            const unknownCount = cards.filter(c => c.status === 'unknown').length;
+
+            const unseenCount = cards.filter(c => !c.status || c.status === 'unseen').length;
+
+
+
+            document.getElementById('knownCountLabel').textContent = knownCount;
+
+            document.getElementById('unknownCountLabel').textContent = unknownCount;
+
+            document.getElementById('unseenCountLabel').textContent = unseenCount;
+
+
+
+            const emptyState = document.getElementById('emptyCardsState');
+
+            const studyContainer = document.getElementById('swipeStudyContainer');
+
+            const completedState = document.getElementById('deckCompletedState');
+
+
+
+            if (cards.length === 0) {
+
+                emptyState.classList.remove('hidden');
+
+                studyContainer.classList.add('hidden');
+
+                completedState.classList.add('hidden');
+
+                return;
+
+            }
+
+            emptyState.classList.add('hidden');
+
+
+
+            if (state.studyDeckIds.length === 0 || state.currentCardPointer >= state.studyDeckIds.length) {
+
+                studyContainer.classList.add('hidden');
+
+                completedState.classList.remove('hidden');
+
+                document.getElementById('deckCompletedSubtitle').textContent = `Ai știut ${knownCount} carduri și mai ai ${unknownCount} marcate „Nu știu”.`;
+
+                return;
+
+            }
+
+
+
+            completedState.classList.add('hidden');
+
+            studyContainer.classList.remove('hidden');
+
+
+
+            const currentId = state.studyDeckIds[state.currentCardPointer];
+
+            const cardObj = cards.find(c => c.id === currentId);
+
+            if (!cardObj) { rebuildStudyDeck(); return; }
+
+
+
+            document.getElementById('currentCardIndexLabel').textContent = `Cardul ${state.currentCardPointer + 1} din ${state.studyDeckIds.length}`;
+
+            document.getElementById('cardFrontText').textContent = cardObj.front;
+
+            document.getElementById('cardBackText').textContent = cardObj.back;
+
+            document.getElementById('cardCategoryTag').textContent = cardObj.category || folder.name;
+
+
+
+            const inner3D = document.getElementById('flashcardInner3D');
+
+            if (state.isCardFlipped) inner3D.classList.add('rotate-y-180');
+
+            else inner3D.classList.remove('rotate-y-180');
+
+        }
+
+
+
+        window.flipCurrentCard = function() {
+
+            state.isCardFlipped = !state.isCardFlipped;
+
+            const inner3D = document.getElementById('flashcardInner3D');
+
+            if (state.isCardFlipped) inner3D.classList.add('rotate-y-180');
+
+            else inner3D.classList.remove('rotate-y-180');
+
+        };
+
+
+
+        window.markCurrentCard = async function(statusValue) {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const currentId = state.studyDeckIds[state.currentCardPointer];
+
+            const cardObj = folder.flashcards.find(c => c.id === currentId);
+
+            if (!cardObj) return;
+
+
+
+            cardObj.status = statusValue;
+
+            state.isCardFlipped = false;
+
+            state.currentCardPointer++;
+
+            updateStudyStatsAndCard();
+
+            await persistFolderToCloud(folder);
+
+        };
+
+
+
+        window.navigateCardDeck = function(delta) {
+
+            const next = state.currentCardPointer + delta;
+
+            if (next >= 0 && next < state.studyDeckIds.length) {
+
+                state.currentCardPointer = next;
+
+                state.isCardFlipped = false;
+
+                updateStudyStatsAndCard();
+
+            }
+
+        };
+
+
+
+        window.toggleStudyOnlyUnknown = function() {
+
+            state.studyOnlyUnknown = !state.studyOnlyUnknown;
+
+            rebuildStudyDeck();
+
+        };
+
+
+
+        window.startRetryOnlyUnknown = function() {
+
+            state.studyOnlyUnknown = true;
+
+            rebuildStudyDeck();
+
+        };
+
+
+
+        window.restartFullDeck = function() {
+
+            state.studyOnlyUnknown = false;
+
+            rebuildStudyDeck();
+
+        };
+
+
+
+        window.shuffleCurrentDeck = function() {
+
+            state.studyDeckIds.sort(() => Math.random() - 0.5);
+
+            state.currentCardPointer = 0;
+
+            state.isCardFlipped = false;
+
+            updateStudyStatsAndCard();
+
+            showToast('Cardurile au fost amestecate!', 'info');
+
+        };
+
+
+
+        window.resetFlashcardsProgress = async function() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            folder.flashcards.forEach(c => c.status = 'unseen');
+
+            state.studyOnlyUnknown = false;
+
+            await persistFolderToCloud(folder);
+
+            rebuildStudyDeck();
+
+            showToast('Progres resetat!', 'info');
+
+        };
+
+
+
+        window.renderManageCardsList = function() {
+
+            const folder = getActiveFolder();
+
+            const listEl = document.getElementById('manageCardsList');
+
+            if (!folder || !listEl) return;
+
+            listEl.innerHTML = '';
+
+            (folder.flashcards || []).forEach(card => {
+
+                const row = document.createElement('div');
+
+                row.className = 'bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-start justify-between gap-3';
+
+                row.innerHTML = `<div class="space-y-1"><p class="text-sm font-bold text-slate-800">${escapeHtml(card.front)}</p><p class="text-xs text-slate-500">${escapeHtml(card.back)}</p></div><button onclick="deleteCard('${card.id}')" class="text-slate-400 hover:text-rose-600"><i class="fa-regular fa-trash-can"></i></button>`;
+
+                listEl.appendChild(row);
+
+            });
+
+        };
+
+
+
+        window.openCardModal = function() {
+
+            state.editingCardId = null;
+
+            document.getElementById('cardFrontInput').value = '';
+
+            document.getElementById('cardBackInput').value = '';
+
+            document.getElementById('cardTagInput').value = '';
+
+            document.getElementById('cardModal').classList.remove('hidden');
+
+        };
+
+
+
+        window.closeCardModal = function() {
+
+            document.getElementById('cardModal').classList.add('hidden');
+
+        };
+
+
+
+        window.saveCardForm = async function(e) {
+
+            e.preventDefault();
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            folder.flashcards.unshift({
+
+                id: 'crd_' + Date.now(),
+
+                front: document.getElementById('cardFrontInput').value.trim(),
+
+                back: document.getElementById('cardBackInput').value.trim(),
+
+                category: document.getElementById('cardTagInput').value.trim(),
+
+                status: 'unseen'
+
+            });
+
+            await persistFolderToCloud(folder);
+
+            closeCardModal();
+
+            refreshActiveFolderUI(false);
+
+            showToast('Card adăugat!', 'success');
+
+        };
+
+
+
+        window.deleteCard = async function(cardId) {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            folder.flashcards = folder.flashcards.filter(c => c.id !== cardId);
+
+            await persistFolderToCloud(folder);
+
+            refreshActiveFolderUI(false);
+
+        };
+
+
+
+        // TESTE GRILĂ ULTRA-RAPIDE ASINCRONE
+
+        window.openGenerateTestModal = async function() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const txt = await ensureSourceTextLoaded(folder.id);
+
+            if (!txt || txt.length < 30) {
+
+                showToast('Încarcă un PDF în acest folder pentru a genera teste!', 'error');
+
+                return;
+
+            }
+
+            document.getElementById('testTitleInput').value = `Test Admitere — ${folder.name}`;
+
+            document.getElementById('generateTestModal').classList.remove('hidden');
+
+        };
+
+
+
+        window.closeGenerateTestModal = function() {
+
+            document.getElementById('generateTestModal').classList.add('hidden');
+
+        };
+
+
+
+        window.startGeneratingTest = async function() {
+
+            const folder = getActiveFolder();
+
+            if (!folder) return;
+
+            const sourceText = await ensureSourceTextLoaded(folder.id);
+
+            const title = document.getElementById('testTitleInput').value.trim() || `Test — ${folder.name}`;
+
+            const totalQ = parseInt(document.getElementById('testFormatSelect').value, 10) || 60;
+
+            closeGenerateTestModal();
+
+
+
+            showLoadingOverlay('Se generează testul...', 'Creăm primele întrebări în paralel...', 40);
+
+
+
+            try {
+
+                const chunk = getPdfChunkForBatch(sourceText, 0, 1, 15000);
+
+                const schema = {
+
+                    type: "ARRAY",
+
+                    items: {
+
+                        type: "OBJECT",
+
+                        properties: {
+
+                            "stem": { "type": "STRING" },
+
+                            "optA": { "type": "STRING" },
+
+                            "optB": { "type": "STRING" },
+
+                            "optC": { "type": "STRING" },
+
+                            "optD": { "type": "STRING" },
+
+                            "optE": { "type": "STRING" },
+
+                            "correctLetter": { "type": "STRING", "enum": ["A", "B", "C", "D", "E"] },
+
+                            "explanation": { "type": "STRING" },
+
+                            "sourceQuote": { "type": "STRING" }
+
+                        },
+
+                        required: ["stem", "optA", "optB", "optC", "optD", "optE", "correctLetter", "explanation", "sourceQuote"]
+
+                    }
+
+                };
+
+
+
+                const csList = await callGeminiStructured(
+
+                    "Ești profesor la UMFCD. Creează grile de complement simplu (A-E) fidele PDF-ului.",
+
+                    `Generează 10 întrebări de complement simplu din acest text:\n${chunk}`,
+
+                    schema
+
+                );
+
+
+
+                const questions = csList.map((q, idx) => ({
+
+                    id: 'q_' + Date.now() + '_' + idx,
+
+                    number: idx + 1,
+
+                    type: 'CS',
+
+                    stem: q.stem,
+
+                    options: { A: q.optA, B: q.optB, C: q.optC, D: q.optD, E: q.optE },
+
+                    correctLetter: (q.correctLetter || 'A').trim().toUpperCase(),
+
+                    explanation: q.explanation,
+
+                    sourceQuote: q.sourceQuote || '',
+
+                    userChoice: null
+
+                }));
+
+
+
+                const newTest = {
+
+                    id: 'tst_' + Date.now(),
+
+                    ownerKey: state.profileKey,
+
+                    folderId: folder.id,
+
+                    title,
+
+                    createdAt: Date.now(),
+
+                    feedbackMode: 'instant',
+
+                    completed: false,
+
+                    questions
+
+                };
+
+
+
+                state.tests.unshift(newTest);
+
+                await persistTestToCloud(newTest);
+
+
+
+                hideLoadingOverlay();
+
+                switchFolderTab('tests');
+
+                refreshActiveFolderUI(false);
+
+                openQuizPlayer(newTest.id);
+
+                showToast('Testul a fost generat!', 'success');
+
+            } catch (err) {
+
+                console.error(err);
+
+                hideLoadingOverlay();
+
+                showToast('Eroare la generarea testului. Verifică cheia API în Setări.', 'error');
+
+            }
+
+        };
+
+
+
+        window.renderSavedTestsList = function() {
+
+            const folder = getActiveFolder();
+
+            const listEl = document.getElementById('savedTestsList');
+
+            if (!folder || !listEl) return;
+
+            const folderTests = state.tests.filter(t => t.folderId === folder.id);
+
+            listEl.innerHTML = '';
+
+
+
+            if (folderTests.length === 0) {
+
+                listEl.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-slate-500 text-xs border border-slate-200">Niciun test în acest folder.</div>`;
+
+                return;
+
+            }
+
+
+
+            folderTests.forEach(test => {
+
+                const item = document.createElement('div');
+
+                item.className = 'bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between gap-3';
+
+                item.innerHTML = `<div><h4 class="font-bold text-slate-900">${escapeHtml(test.title)}</h4><p class="text-xs text-slate-500">${test.questions.length} întrebări</p></div><button onclick="openQuizPlayer('${test.id}')" class="py-2 px-4 rounded-xl bg-indigo-600 text-white font-bold text-xs">Deschide</button>`;
+
+                listEl.appendChild(item);
+
+            });
+
+        };
+
+
+
+        window.openQuizPlayer = function(testId) {
+
+            state.activeTestId = testId;
+
+            document.getElementById('testsListContainer').classList.add('hidden');
+
+            document.getElementById('activeQuizPlayer').classList.remove('hidden');
+
+            renderActiveQuiz();
+
+        };
+
+
+
+        window.closeActiveQuiz = function() {
+
+            state.activeTestId = null;
+
+            document.getElementById('activeQuizPlayer').classList.add('hidden');
+
+            document.getElementById('testsListContainer').classList.remove('hidden');
+
+            renderSavedTestsList();
+
+        };
+
+
+
+        function getActiveTest() { return state.tests.find(t => t.id === state.activeTestId) || null; }
+
+
+
+        function renderActiveQuiz() {
+
+            const test = getActiveTest();
+
+            if (!test) return;
+
+            document.getElementById('activeQuizTitle').textContent = test.title;
+
+            const container = document.getElementById('quizQuestionsContainer');
+
+            container.innerHTML = '';
+
+
+
+            test.questions.forEach(q => {
+
+                const card = document.createElement('div');
+
+                card.className = 'bg-white rounded-2xl p-4 border border-slate-200 space-y-3';
+
+                let optsHtml = '';
+
+                ['A', 'B', 'C', 'D', 'E'].forEach(l => {
+
+                    const isSelected = q.userChoice === l;
+
+                    const isRight = q.correctLetter === l;
+
+                    let style = 'bg-white border-slate-200';
+
+                    if (test.completed || q.userChoice) {
+
+                        if (isRight) style = 'bg-emerald-50 border-emerald-500 font-bold';
+
+                        else if (isSelected) style = 'bg-rose-50 border-rose-500';
+
+                    } else if (isSelected) {
+
+                        style = 'bg-indigo-50 border-indigo-500 font-bold';
+
+                    }
+
+                    optsHtml += `<button onclick="selectQuizOption('${q.id}', '${l}')" class="w-full p-2.5 rounded-xl border text-left text-xs transition ${style}"><strong>${l}.</strong> ${escapeHtml(q.options[l])}</button>`;
+
+                });
+
+                card.innerHTML = `<span class="text-xs font-black">#${q.number}</span><p class="text-sm font-bold text-slate-900">${escapeHtml(q.stem)}</p><div class="space-y-1.5">${optsHtml}</div>${(test.completed || q.userChoice) ? `<div class="p-3 bg-slate-50 rounded-xl text-xs"><strong class="text-emerald-700">Răspuns corect: ${q.correctLetter}</strong><p class="mt-1">${escapeHtml(q.explanation)}</p></div>` : ''}`;
+
+                container.appendChild(card);
+
+            });
+
+        }
+
+
+
+        window.selectQuizOption = async function(qId, letter) {
+
+            const test = getActiveTest();
+
+            if (!test) return;
+
+            const q = test.questions.find(item => item.id === qId);
+
+            if (!q) return;
+
+            q.userChoice = letter;
+
+            renderActiveQuiz();
+
+            await persistTestToCloud(test);
+
+        };
+
+
+
+        window.finishAndGradeQuiz = async function() {
+
+            const test = getActiveTest();
+
+            if (!test) return;
+
+            test.completed = true;
+
+            await persistTestToCloud(test);
+
+            renderActiveQuiz();
+
+            showToast('Test finalizat!', 'success');
+
+        };
+
+
+
+        window.deleteSavedTest = async function(testId) {
+
+            state.tests = state.tests.filter(t => t.id !== testId);
+
+            if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'medstudy_tests', testId));
+
+            renderSavedTestsList();
+
+        };
+
+
+
+        // EXPORT / IMPORT BACKUP
+
+        window.exportBackupJSON = function() {
+
+            const data = { username: state.usernameDisplay, folders: state.folders, sources: state.sources, tests: state.tests };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+
+            a.href = url;
+
+            a.download = `backup_${state.usernameDisplay || 'studii'}.json`;
+
+            a.click();
+
+        };
+
+
+
+        window.triggerImportBackup = function() { document.getElementById('importJsonInput').click(); };
+
+        window.handleImportBackup = async function(e) {
+
+            const file = e.target.files?.[0];
+
+            if (!file) return;
+
+            const data = JSON.parse(await file.text());
+
+            state.folders = data.folders || [];
+
+            state.sources = data.sources || {};
+
+            state.tests = data.tests || [];
+
+            renderDashboard();
+
+            showToast('Backup importat cu succes!', 'success');
+
+        };
+
+
+
+        window.openSettingsModal = function() { document.getElementById('settingsModal').classList.remove('hidden'); };
+
+        window.closeSettingsModal = function() { document.getElementById('settingsModal').classList.add('hidden'); };
+
+        window.saveSettingsModal = function() {
+
+            state.customApiKey = document.getElementById('customApiKeyInput').value.trim();
+
+            closeSettingsModal();
+
+            showToast('Cheia API salvată!', 'success');
+
+        };
+
+
+
+        let confirmCb = null;
+
+        function openConfirmModal(title, msg, cb) {
+
+            document.getElementById('confirmModalTitle').textContent = title;
+
+            document.getElementById('confirmModalMessage').textContent = msg;
+
+            confirmCb = cb;
+
+            document.getElementById('confirmModal').classList.remove('hidden');
+
+        }
+
+        window.closeConfirmModal = function() { document.getElementById('confirmModal').classList.add('hidden'); confirmCb = null; };
+
+        document.getElementById('confirmModalActionBtn').onclick = () => { if (confirmCb) confirmCb(); closeConfirmModal(); };
+
+
+
+        function showLoadingOverlay(t, s, p) {
+
+            document.getElementById('loadingTitle').textContent = t;
+
+            document.getElementById('loadingSubtitle').textContent = s;
+
+            document.getElementById('loadingProgressBar').style.width = p + '%';
+
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+        }
+
+        function hideLoadingOverlay() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+
+
+
+        function showToast(msg, type = 'info') {
+
+            const c = document.getElementById('toastContainer');
+
+            const d = document.createElement('div');
+
+            d.className = `px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-semibold text-white ${type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-900'}`;
+
+            d.textContent = msg;
+
+            c.appendChild(d);
+
+            setTimeout(() => d.remove(), 3500);
+
+        }
+
+
+
+        function escapeHtml(str) {
+
+            return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        }
+
+
+
+        initCloudConnection();
+
+    </script>
+
+</body>
+
+</html>

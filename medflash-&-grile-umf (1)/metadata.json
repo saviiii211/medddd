@@ -1,0 +1,6 @@
+{
+  "name": "MedFlash & Grile UMF",
+  "description": "Platformă inteligentă de studiu și generare rapidă de flashcarduri și teste grilă UMFCD din materiale PDF cu Gemini 3.8 Flash.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
